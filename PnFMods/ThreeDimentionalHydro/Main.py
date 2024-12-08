@@ -193,10 +193,7 @@ class ThreeDimentionalHydroDrawer(object):
         dt = currentTime - self.prevDrawTime
         self.prevDrawTime = currentTime
         
-        
         hydroInfo = vehicle.getHydroAcousticSearchInfo()
-        if hydroInfo is None: # ???????
-            utils.logInfo(LOGGER_NAME, 'isAlive: {}, pn: {}, name: {}, st: {}'.format(vehicle.isAlive(), vehicle.playerName , vehicle.name, vehicle.subtype ))
         hydroCircle = self.hydroCircle
         state = hydroInfo.state
         isVisible = self.getVisibility(state)
