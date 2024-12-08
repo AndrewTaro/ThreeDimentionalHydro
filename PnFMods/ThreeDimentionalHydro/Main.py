@@ -180,8 +180,12 @@ class ThreeDimentionalHydroDrawer(object):
         return m
         
     def draw(self):
-        if not self.vehicle:
-            utils.logInfo(LOGGER_NAME, 'Ship does not exist.')
+        vehicle = self.vehicle
+        if vehicle is None or not vehicle.isAlive():
+            # isAlive essentially checks the entity existence in the world.
+            # vehicle will not be nullified when it is unloaded from the client, e.g. going out of rendering range.
+            # in such a case, vehicle will return None for `getHydroAcousticSearchInfo`
+            utils.logInfo(LOGGER_NAME, 'Ship does not exist, or is being unloaded from the world.')
             self.stopDrawing()
             return
         
@@ -189,8 +193,10 @@ class ThreeDimentionalHydroDrawer(object):
         dt = currentTime - self.prevDrawTime
         self.prevDrawTime = currentTime
         
-        ownVehicle = self.vehicle
-        hydroInfo = ownVehicle.getHydroAcousticSearchInfo()
+        
+        hydroInfo = vehicle.getHydroAcousticSearchInfo()
+        if hydroInfo is None: # ???????
+            utils.logInfo(LOGGER_NAME, 'isAlive: {}, pn: {}, name: {}, st: {}'.format(vehicle.isAlive(), vehicle.playerName , vehicle.name, vehicle.subtype ))
         hydroCircle = self.hydroCircle
         state = hydroInfo.state
         isVisible = self.getVisibility(state)
@@ -201,7 +207,7 @@ class ThreeDimentionalHydroDrawer(object):
         
         hydroCircle.color = self.colorTable[state]
         hydroCircle.alphaFactor = self.getAlpha(dt, state, hydroInfo.workTimeLeft)
-        hydroCircleMatrix = self.getTransform(ownVehicle.getPosition())
+        hydroCircleMatrix = self.getTransform(vehicle.getPosition())
         SpatialUI.setTransform(hydroCircle, hydroCircleMatrix)
 
     def getVisibility(self, state):
