@@ -121,16 +121,16 @@ class UserPrefsManager(object):
                 saveObj[saveKey] = value
 
 
-#Drawer
+# Drawer
 class ThreeDimentionalHydroDrawer(object):
     def __init__(self, vehicle):
         self.vehicle = vehicle
         self.currentBlinkTime = 0.0
         self.hydroDist = vehicle.getHydroAcousticSearchInfo().distShip
-        #mesh
+        # mesh
         self.hydroCircle = None
         self.colorTable = self.__getColorTable()
-        #other
+        # other
         self.updateTimer = None
         self.prevDrawTime = utils.getTimeFromGameStart()
         self.initMesh()
@@ -138,13 +138,13 @@ class ThreeDimentionalHydroDrawer(object):
         utils.logInfo(LOGGER_NAME, 'Hydro Drawer started.')
 
     def initMesh(self):
-        #circle contour
+        # circle contour
         hydroCircle = SpatialUI.EllipseContour(1, SpatialUI.LDR)
         hydroCircle.lineWidth = CIRCLE_LINE_WIDTH
         hydroCircle.color = Colors.NONE
         hydroCircle.visible = False
         hydroCircle.set((0.0, 0.0, 0.0), self.hydroDist*2, self.hydroDist*2)
-        #params
+        # params
         params = SpatialUI.Params()
         params.depthTestBits = DEPTH_TEST_BITS
         SpatialUI.setParams(hydroCircle, params)
