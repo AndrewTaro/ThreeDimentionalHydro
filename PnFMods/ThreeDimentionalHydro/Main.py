@@ -271,6 +271,8 @@ class HydroDrawersManager(object):
         pass
 
     def init(self):
+        if battle.isObserverMode():
+            return
         self.updateTimer = callbacks.perTick(self.update)
 
     def update(self):
