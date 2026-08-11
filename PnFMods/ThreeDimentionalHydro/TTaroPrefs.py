@@ -3,7 +3,7 @@
 # TTaroPrefs.py -- TEMPLATE.  Copy verbatim into a consumer mod's
 # PnFMods/<ModName>/ directory, next to its Main.py.
 #
-# TEMPLATE VERSION: 1 (2026-07-26)
+# TEMPLATE VERSION: 2 (2026-08-12)
 # Canonical source: TTaroModConfig/PnFMods/TTaroModConfig/templates/TTaroPrefs.py
 # Do not edit the copy.  Fix the source, then re-copy into every consumer.
 #
@@ -115,6 +115,8 @@ except Exception:
 # its runtime (lower-camel) form -- Components.xml declares it PascalCase as
 # `Mods_DataComponent`, the runtime/CC name is `mods_DataComponent`.  If this
 # ever returns None (see the diagnosis in _resolve), try 'Mods_DataComponent'.
+# MEASURED in the live client 2026-08-12 (build 12830008): the lower-camel name
+# is correct from a v1 sandbox mod; the collection held 625 entities.
 COLLECTION_NAME = 'mods_DataComponent'
 
 # Component key scheme, per VIEW_CONTRACT.md: modPrefs.<fullDottedKey>
@@ -232,9 +234,14 @@ class PrefStore(object):
 
     def subscribe(self, shortName, fn):
         """React to a change.  NOT needed for correctness -- get() is already
-        live -- only to invalidate a DERIVED cache or trigger a redraw.  The
-        callback should accept *args; the component fires evDataChanged and the
-        argument shape is not contractual."""
+        live -- only to invalidate a DERIVED cache or trigger a redraw.
+
+        MEASURED 2026-08-12: evDataChanged does reach a Python subscriber, it
+        fires SYNCHRONOUSLY inside the write, and it passes exactly ONE
+        argument -- the component itself, not the data dict and not the new
+        value.  Read through get() in the handler rather than off the argument.
+        Declare the callback `*args` anyway: the arity is not contractual, and
+        a signature mismatch here raises inside the framework's write path."""
         comp = self._require(shortName)
         comp.evDataChanged.add(fn)
         self._subscriptions.append((comp, fn))
