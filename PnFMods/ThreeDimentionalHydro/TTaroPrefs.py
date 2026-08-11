@@ -18,6 +18,11 @@
 # v1 CANNOT do a keyed lookup: the v1 dataHub exposes exactly two entity
 # lookups, getSingleEntity and getEntityCollections.  getEntityByIndex is
 # v2-only and is not reachable from a v1 sandbox mod.
+# VERIFIED 2026-08-12 in the live client: the v1 dataHub module has no
+# getEntityByIndex attribute at all, while the native hub answers
+# `getEntityByIndex(componentId, CC.mods_DataComponent)` with the entity in
+# O(1).  So a v2 mod must NOT copy this file -- it should key straight into the
+# hub instead of paying the sweep.
 # So we enumerate the collection ONCE and keep the component references.  That
 # is an O(total components) sweep paid once at load; every read afterwards is
 # an O(1) dict hit.
