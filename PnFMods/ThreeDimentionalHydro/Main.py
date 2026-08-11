@@ -54,16 +54,24 @@ PREF_KEYS = {
 # Consumable state -> the schema's three colour buckets.  SELECTED shares READY
 # and PREPARATION shares RELOAD, exactly as they shared an opacity pref before.
 # NO_AMMO maps to None: it has no setting because the legacy table drew it as
-# transparent black.  A state absent from this table (the view-side enum carries
-# a REGENERATION the mod-side one does not) also reads None and is not drawn,
-# rather than raising once per tick as the old colour table did.
+# transparent black.  An unlisted state also reads None and is not drawn, rather
+# than raising once per tick as the old colour table did.
+#
+# Keyed by NAME, never by number.  The mod-side enum on 12830008 is 8 states
+# (READY 0, SELECTED 1, WORK_PREPARATION 2, AT_WORK 3, RELOAD 4, NO_AMMO 5,
+# PREPARATION 6, REGENERATION 7) and does not match the 7-state view-side
+# numbering some references quote -- AT_WORK is 3 here, not 2.  WORK_PREPARATION
+# and REGENERATION join the reload bucket on the client's own groupings:
+# WITH_TIME_STATES holds [2,3,4,6,7] and RELOAD_LIKE holds [4,7].
 STATE_BUCKETS = {
-    constants.ConsumableStates.READY:       'ready',
-    constants.ConsumableStates.SELECTED:    'ready',
-    constants.ConsumableStates.AT_WORK:     'active',
-    constants.ConsumableStates.RELOAD:      'reload',
-    constants.ConsumableStates.PREPARATION: 'reload',
-    constants.ConsumableStates.NO_AMMO:     None,
+    constants.ConsumableStates.READY:            'ready',
+    constants.ConsumableStates.SELECTED:         'ready',
+    constants.ConsumableStates.AT_WORK:          'active',
+    constants.ConsumableStates.RELOAD:           'reload',
+    constants.ConsumableStates.PREPARATION:      'reload',
+    constants.ConsumableStates.WORK_PREPARATION: 'reload',
+    constants.ConsumableStates.REGENERATION:     'reload',
+    constants.ConsumableStates.NO_AMMO:          None,
 }
 
 OPAQUE = 0xFF000000
