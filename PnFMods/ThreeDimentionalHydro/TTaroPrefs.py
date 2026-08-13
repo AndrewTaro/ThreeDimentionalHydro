@@ -3,7 +3,7 @@
 # TTaroPrefs.py -- TEMPLATE.  Copy verbatim into a consumer mod's
 # PnFMods/<ModName>/ directory, next to its Main.py.
 #
-# TEMPLATE VERSION: 2 (2026-08-12)
+# TEMPLATE VERSION: 3 (2026-08-13) -- v3 cancels the repeating retry timer; v2 leaked it
 # Canonical source: TTaroModConfig/PnFMods/TTaroModConfig/templates/TTaroPrefs.py
 # Do not edit the copy.  Fix the source, then re-copy into every consumer.
 #
@@ -127,11 +127,16 @@ COLLECTION_NAME = 'mods_DataComponent'
 # Component key scheme, per VIEW_CONTRACT.md: modPrefs.<fullDottedKey>
 KEY_PREFIX = 'modPrefs.'
 
-# One-shot backoff chain, NOT a loop and NOT perTick.  Framework start() and a
-# consumer's Main.py both run at game launch with no defined ordering, so the
-# first sweep can legitimately come up empty.  In the common case (framework a
-# few ms ahead) we resolve on the immediate attempt and never arm a timer at
-# all; the pathological case costs six wakeups over ~8s rather than forty.
+# Backoff chain.  Framework start() and a consumer's Main.py both run at game
+# launch with no defined ordering, so the first sweep can legitimately come up
+# empty.  In the common case (framework a few ms ahead) we resolve on the
+# immediate attempt and never arm a timer at all; the pathological case costs
+# six wakeups over ~8s rather than forty.
+#
+# NOT one-shot at the API level -- `callbacks.callback` REPEATS until cancelled
+# (see _tick).  Each step is made one-shot by _tick cancelling the timer that
+# woke it.  The comment that used to sit here claimed this chain was "NOT a
+# loop", which is precisely the assumption the v2 leak was written against.
 RETRY_DELAYS = (0.1, 0.25, 0.5, 1.0, 2.0, 4.0)
 
 
@@ -191,12 +196,7 @@ class PrefStore(object):
         """Cancel any pending retry and drop subscriptions.  Safe to call from
         a mod teardown path; a pending callback must never fire into a dead
         object."""
-        if self._handle is not None:
-            try:
-                callbacks.cancel(self._handle)
-            except Exception:
-                pass
-            self._handle = None
+        self._cancelPending()
         for comp, fn in self._subscriptions:
             try:
                 comp.evDataChanged.remove(fn)
@@ -265,8 +265,29 @@ class PrefStore(object):
 
     # ------------------------------------------------------------ internals
 
-    def _tick(self):
+    def _cancelPending(self):
+        """Drop the armed timer, if any.  See the warning on _tick."""
+        if self._handle is None:
+            return
+        try:
+            callbacks.cancel(self._handle)
+        except Exception:
+            pass
         self._handle = None
+
+    def _tick(self):
+        # `callbacks.callback` is a REPEATING timer, not the one-shot its name (and
+        # the ModsAPI reference) suggest: the shared onTick advances the entry's
+        # deadline and never removes it, so the timer that woke us keeps firing at
+        # `delay` forever until it is cancelled.  MEASURED 2026-08-13 -- an
+        # unmigrated first sweep armed a 0.1s retry and then logged 'prefs resolved'
+        # ~10 times a second for the rest of the session (2000+ lines), because
+        # _succeed() has no guard against being re-entered.
+        #
+        # Cancel FIRST, before any early return: nulling the handle without
+        # cancelling (what this used to do) also loses the only reference stop()
+        # could have used, so the leak became unstoppable for the session.
+        self._cancelPending()
         missing, diagnosis = self._resolve()
 
         if diagnosis is not None:
