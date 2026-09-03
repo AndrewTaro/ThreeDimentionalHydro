@@ -36,19 +36,19 @@ KM_TO_BW = 1000.0 * METER_TO_BW
 # shortName -> full dotted key, from 3d-hydro.schema.json.  Colour and alpha
 # both ride in one packed 0xAARRGGBB value per (team, state, enemy-in-range).
 PREF_KEYS = {
-    'ownTeam.ready.color':                 '3dHydro.ownTeam.ready.color',
-    'ownTeam.ready.colorEnemyInRange':     '3dHydro.ownTeam.ready.colorEnemyInRange',
-    'ownTeam.reload.color':                '3dHydro.ownTeam.reload.color',
-    'ownTeam.reload.colorEnemyInRange':    '3dHydro.ownTeam.reload.colorEnemyInRange',
-    'ownTeam.active.color':                '3dHydro.ownTeam.active.color',
-    'ownTeam.active.colorEnemyInRange':    '3dHydro.ownTeam.active.colorEnemyInRange',
-    'otherTeam.ready.color':               '3dHydro.otherTeam.ready.color',
-    'otherTeam.ready.colorEnemyInRange':   '3dHydro.otherTeam.ready.colorEnemyInRange',
-    'otherTeam.reload.color':              '3dHydro.otherTeam.reload.color',
-    'otherTeam.reload.colorEnemyInRange':  '3dHydro.otherTeam.reload.colorEnemyInRange',
-    'otherTeam.active.color':              '3dHydro.otherTeam.active.color',
-    'otherTeam.active.colorEnemyInRange':  '3dHydro.otherTeam.active.colorEnemyInRange',
-    'distanceOffset':                      '3dHydro.distanceOffset',
+    'ownTeam.ready.color':                 'ttaro.3dHydro.ownTeam.ready.color',
+    'ownTeam.ready.colorEnemyInRange':     'ttaro.3dHydro.ownTeam.ready.colorEnemyInRange',
+    'ownTeam.reload.color':                'ttaro.3dHydro.ownTeam.reload.color',
+    'ownTeam.reload.colorEnemyInRange':    'ttaro.3dHydro.ownTeam.reload.colorEnemyInRange',
+    'ownTeam.active.color':                'ttaro.3dHydro.ownTeam.active.color',
+    'ownTeam.active.colorEnemyInRange':    'ttaro.3dHydro.ownTeam.active.colorEnemyInRange',
+    'otherTeam.ready.color':               'ttaro.3dHydro.otherTeam.ready.color',
+    'otherTeam.ready.colorEnemyInRange':   'ttaro.3dHydro.otherTeam.ready.colorEnemyInRange',
+    'otherTeam.reload.color':              'ttaro.3dHydro.otherTeam.reload.color',
+    'otherTeam.reload.colorEnemyInRange':  'ttaro.3dHydro.otherTeam.reload.colorEnemyInRange',
+    'otherTeam.active.color':              'ttaro.3dHydro.otherTeam.active.color',
+    'otherTeam.active.colorEnemyInRange':  'ttaro.3dHydro.otherTeam.active.colorEnemyInRange',
+    'distanceOffset':                      'ttaro.3dHydro.distanceOffset',
 }
 
 # Consumable state -> the schema's three colour buckets.  SELECTED shares READY
