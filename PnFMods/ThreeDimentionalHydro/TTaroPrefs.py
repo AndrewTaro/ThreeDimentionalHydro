@@ -3,7 +3,7 @@
 # TTaroPrefs.py -- TEMPLATE.  Copy verbatim into a consumer mod's
 # PnFMods/<ModName>/ directory, next to its Main.py.
 #
-# TEMPLATE VERSION: 3 (2026-08-13) -- v3 cancels the repeating retry timer; v2 leaked it
+# TEMPLATE VERSION: 4
 # Canonical source: TTaroModConfig/PnFMods/TTaroModConfig/templates/TTaroPrefs.py
 # Do not edit the copy.  Fix the source, then re-copy into every consumer.
 #
@@ -13,65 +13,60 @@
 # Reads the TTaroModConfig (TTaroModUtils) per-setting pref store from Python.
 # The framework publishes one `Mods_DataComponent` per storable setting, keyed
 # `modPrefs.<fullDottedKey>`, carrying {value, visible}.  The view reads those
-# with $datahub.getPrimWatcher; this module is the Python-side equivalent.
+# with $datahub.getPrimWatcher.  This module is the Python-side equivalent.
 #
-# v1 CANNOT do a keyed lookup: the v1 dataHub exposes exactly two entity
-# lookups, getSingleEntity and getEntityCollections.  getEntityByIndex is
-# v2-only and is not reachable from a v1 sandbox mod.
-# VERIFIED 2026-08-12 in the live client: the v1 dataHub module has no
-# getEntityByIndex attribute at all, while the native hub answers
-# `getEntityByIndex(componentId, CC.mods_DataComponent)` with the entity in
-# O(1).  So a v2 mod must NOT copy this file -- it should key straight into the
-# hub instead of paying the sweep.
-# So we enumerate the collection ONCE and keep the component references.  That
-# is an O(total components) sweep paid once at load; every read afterwards is
-# an O(1) dict hit.
+# v1 has no keyed entity lookup.  It offers two entity lookups only,
+# getSingleEntity and getEntityCollections.  So this module enumerates the
+# collection ONCE and keeps the component references.  The sweep costs
+# O(total components) once at load, and every read afterwards is an O(1) dict
+# hit.  A v2 mod must NOT copy this file.  v2 keys straight into the hub with
+# getEntityByIndex(componentId, CC.mods_DataComponent).
 #
 # ---------------------------------------------------------------------------
 # THE RULES THIS MODULE ENCODES -- read before adding a key
 #
 # 1. HOLD THE COMPONENT, NEVER `.data`.
 #    The framework updates via ui.updateUiElementData(), which REPLACES the
-#    data dict on the component.  A held component stays valid across updates;
-#    a held `.data` reference goes silently stale.  get() therefore re-reads
-#    comp.data on every call.  Never cache what get() returns.
+#    data dict on the component.  A held component stays valid across updates.
+#    A held `.data` reference goes stale without any error.  get() therefore
+#    re-reads comp.data on every call.  Never cache what get() returns.
 #
 # 2. NO DEFAULTS LIVE HERE.
 #    TTaroModConfig is a hard dependency.  Every key must resolve or the mod
-#    refuses to run, so a read is always backed by a live component -- and the
-#    framework already publishes the EFFECTIVE value (stored value, or the
-#    schema default when unset).  Duplicating defaults mod-side would just
-#    create a second source of truth that drifts from the schema.
+#    refuses to run, so a read always has a live component behind it.  The
+#    framework publishes the EFFECTIVE value: the stored value, or the schema
+#    default when unset.  Mod-side defaults are a second source of truth that
+#    drifts from the schema.
 #
 # 3. FAIL ONCE, AT INIT -- THEN BE INERT.
-#    Resolution failure must not throw from an event callback: these mods
+#    Resolution failure must not throw from an event callback.  These mods
 #    subscribe to per-entity and per-tick events, so a throw there becomes
-#    thousands of identical tracebacks per battle and buries the one line that
-#    explains the problem.  One logError, set inert, early-return everywhere.
+#    thousands of identical tracebacks per battle.  One logError, set inert,
+#    early-return everywhere.
 #
 # 4. FAIL BEFORE PUBLISHING ANYTHING.
 #    Do the mod's real init inside the onReady callback.  If resolution fails,
-#    the mod must NOT have created its DataHub entities or view components --
-#    otherwise the view renders a shell against data that never arrives, which
-#    is exactly the "working but broken" state fail-fast exists to prevent.
+#    the mod must NOT have created its DataHub entities or view components.
+#    Otherwise the view renders a shell against data that never arrives.
 #
 # ---------------------------------------------------------------------------
 # TWO KEYS THAT MUST NEVER GO IN THE TABLE
 #
-# A wrong entry here does not misbehave quietly -- it makes the mod disable
-# itself permanently, with an error that points at the framework instead of at
-# the key list.  Both are currently hypothetical (no Python consumer uses
-# either yet); they are documented because they would be maddening to
-# diagnose cold.
+# Either one disables the mod permanently, with an error that names the
+# framework instead of the key list.
 #
-#   * `position` settings publish {x, y} -- NOT {value}.  get() would raise on
-#     the missing 'value'.  Use data() and read x/y yourself.
+#   * `position` settings publish {'value': {x, y}}.  The 'value' key is there,
+#     but it holds a POINT, not a scalar.  get() returns a dict instead of
+#     raising, and the arithmetic fails somewhere else.  Read
+#     data()['value']['x'] / ['y'].  The point is the origin for the current
+#     resolution.  Python owns the per-resolution bucket map, and the view
+#     never sees it.
 #
 #   * `owned:false` settings (the minimap's `backend:"minimapOption"` nodes)
-#     get NO modPrefs component AT ALL -- the framework deliberately excludes
-#     them from the store; they live in the game's own minimapOption entity.
-#     Such a key can never resolve, so completeness never reaches 100% and the
-#     mod disables itself forever.  Read those via CC.minimapOption instead.
+#     get NO modPrefs component at all.  The framework excludes them from the
+#     store, and they live in the game's own minimapOption entity.  Such a key
+#     can never resolve, so the mod disables itself forever.  Read those via
+#     CC.minimapOption instead.
 #
 # ---------------------------------------------------------------------------
 # USAGE
@@ -96,10 +91,9 @@
 # ---------------------------------------------------------------------------
 # LOGGING -- utils.logInfo/logError take ONE message string
 #
-# The log category is fixed by the API itself; the caller never supplies a log
-# name.  Older mods call these with two arguments (a logger name plus the text):
-# that does not raise, but it misplaces the message.  Pass a single
-# pre-formatted string and prefix it yourself, as _log/_logError do below.
+# The API fixes the log category, and the caller never supplies a log name.  A
+# two-argument call does not raise, but it misplaces the message.  Pass one
+# pre-formatted string and add your own prefix, as _log/_logError do below.
 #
 # Python 2.7.
 
@@ -116,27 +110,20 @@ except Exception:
     CC = None
 
 
-# The collection name passed to getEntityCollections is the COMPONENT name in
-# its runtime (lower-camel) form -- Components.xml declares it PascalCase as
-# `Mods_DataComponent`, the runtime/CC name is `mods_DataComponent`.  If this
-# ever returns None (see the diagnosis in _resolve), try 'Mods_DataComponent'.
-# MEASURED in the live client 2026-08-12 (build 12830008): the lower-camel name
-# is correct from a v1 sandbox mod; the collection held 625 entities.
+# getEntityCollections takes the COMPONENT name in its runtime (lower-camel)
+# form.  Components.xml declares it PascalCase as `Mods_DataComponent`, and the
+# runtime/CC name is `mods_DataComponent`.  If this returns None (see the
+# diagnosis in _resolve), try 'Mods_DataComponent'.
 COLLECTION_NAME = 'mods_DataComponent'
 
 # Component key scheme, per VIEW_CONTRACT.md: modPrefs.<fullDottedKey>
 KEY_PREFIX = 'modPrefs.'
 
 # Backoff chain.  Framework start() and a consumer's Main.py both run at game
-# launch with no defined ordering, so the first sweep can legitimately come up
-# empty.  In the common case (framework a few ms ahead) we resolve on the
-# immediate attempt and never arm a timer at all; the pathological case costs
-# six wakeups over ~8s rather than forty.
+# launch with no defined ordering, so the first sweep can come up empty.
 #
-# NOT one-shot at the API level -- `callbacks.callback` REPEATS until cancelled
-# (see _tick).  Each step is made one-shot by _tick cancelling the timer that
-# woke it.  The comment that used to sit here claimed this chain was "NOT a
-# loop", which is precisely the assumption the v2 leak was written against.
+# `callbacks.callback` is not one-shot.  It REPEATS until cancelled (see
+# _tick).  _tick makes each step one-shot by cancelling the timer that woke it.
 RETRY_DELAYS = (0.1, 0.25, 0.5, 1.0, 2.0, 4.0)
 
 
@@ -148,8 +135,8 @@ class PrefStore(object):
     """Resolves a mod's pref components once, then serves live reads.
 
     States: 'idle' -> 'resolving' -> 'ready' | 'failed'.  'failed' is terminal
-    and inert: every read raises, and the mod is expected to have early-returned
-    out of its own init long before that.
+    and inert.  Every read raises, and the mod must already have early-returned
+    out of its own init.
     """
 
     def __init__(self, modName, keys):
@@ -180,8 +167,8 @@ class PrefStore(object):
     # ------------------------------------------------------------ lifecycle
 
     def start(self, onReady=None, onFailed=None):
-        """Begin resolution.  onReady fires once, when every key is resolved --
-        put the mod's real init there.  onFailed fires once on give-up."""
+        """Begin resolution.  onReady fires once, when every key resolves.  Put
+        the mod's real init there.  onFailed fires once on give-up."""
         if self._state != 'idle':
             return
         self._onReady = onReady
@@ -190,11 +177,11 @@ class PrefStore(object):
         if not self._keys:
             self._succeed()
             return
-        self._tick()                     # immediate attempt; timer only if needed
+        self._tick()                     # immediate attempt, timer only if needed
 
     def stop(self):
-        """Cancel any pending retry and drop subscriptions.  Safe to call from
-        a mod teardown path; a pending callback must never fire into a dead
+        """Cancel any pending retry and drop subscriptions.  Call this from the
+        mod teardown path.  A pending callback must never fire into a dead
         object."""
         self._cancelPending()
         for comp, fn in self._subscriptions:
@@ -208,25 +195,27 @@ class PrefStore(object):
 
     def get(self, shortName):
         """The setting's effective value.  Re-reads comp.data every call (rule
-        1) -- never cache the result."""
+        1).  Never cache the result.
+
+        A `position` returns the {x, y} POINT, not a scalar -- it does not raise."""
         comp = self._require(shortName)
         try:
             return comp.data['value']
         except Exception as e:
             raise PrefStoreError(
-                "pref '%s' (%s) has no 'value' -- is it a `position` setting? "
-                "use data() for those. (%s)"
+                "pref '%s' (%s) published no 'value' -- the framework did not "
+                "publish this component. (%s)"
                 % (shortName, self._keys.get(shortName), e))
 
     def data(self, shortName):
-        """The whole component data dict.  Use for shapes that are not a plain
-        scalar -- `position` publishes {x, y}, `color` carries the derived
-        channel/HSV keys alongside `value`."""
+        """The whole component data dict.  Use it for shapes that are not a
+        plain scalar.  `position` publishes {'value': {x, y}}.  `color` carries
+        the derived channel/HSV keys alongside `value`."""
         return self._require(shortName).data
 
     def isVisible(self, shortName):
         """The framework-evaluated `enabledWhen` state.  The config panel greys
-        a row when this is false; a consumer may want to skip the feature."""
+        a row when this is false.  A consumer can skip the feature."""
         try:
             return bool(self._require(shortName).data['visible'])
         except PrefStoreError:
@@ -238,15 +227,15 @@ class PrefStore(object):
         return shortName in self._components
 
     def subscribe(self, shortName, fn):
-        """React to a change.  NOT needed for correctness -- get() is already
-        live -- only to invalidate a DERIVED cache or trigger a redraw.
+        """React to a change.  Correctness does not need this, because get() is
+        already live.  Use it to invalidate a DERIVED cache or to trigger a
+        redraw.
 
-        MEASURED 2026-08-12: evDataChanged does reach a Python subscriber, it
-        fires SYNCHRONOUSLY inside the write, and it passes exactly ONE
-        argument -- the component itself, not the data dict and not the new
-        value.  Read through get() in the handler rather than off the argument.
-        Declare the callback `*args` anyway: the arity is not contractual, and
-        a signature mismatch here raises inside the framework's write path."""
+        evDataChanged fires SYNCHRONOUSLY inside the write and passes exactly
+        ONE argument: the component itself, not the data dict and not the new
+        value.  Read through get() in the handler, not off the argument.
+        Declare the callback `*args` anyway.  The arity is not contractual, and
+        a signature mismatch raises inside the framework's write path."""
         comp = self._require(shortName)
         comp.evDataChanged.add(fn)
         self._subscriptions.append((comp, fn))
@@ -276,23 +265,17 @@ class PrefStore(object):
         self._handle = None
 
     def _tick(self):
-        # `callbacks.callback` is a REPEATING timer, not the one-shot its name (and
-        # the ModsAPI reference) suggest: the shared onTick advances the entry's
-        # deadline and never removes it, so the timer that woke us keeps firing at
-        # `delay` forever until it is cancelled.  MEASURED 2026-08-13 -- an
-        # unmigrated first sweep armed a 0.1s retry and then logged 'prefs resolved'
-        # ~10 times a second for the rest of the session (2000+ lines), because
-        # _succeed() has no guard against being re-entered.
+        # `callbacks.callback` is a REPEATING timer, whatever the name suggests.
+        # The timer that woke us keeps firing at `delay` until it is cancelled,
+        # and _succeed() has no guard against re-entry.
         #
-        # Cancel FIRST, before any early return: nulling the handle without
-        # cancelling (what this used to do) also loses the only reference stop()
-        # could have used, so the leak became unstoppable for the session.
+        # Cancel FIRST, before any early return.  Nulling the handle without
+        # cancelling loses the only reference stop() can use.
         self._cancelPending()
         missing, diagnosis = self._resolve()
 
         if diagnosis is not None:
-            # Terminal: retrying cannot help.  Abort the chain now rather than
-            # burning the whole backoff and then blaming the install.
+            # Terminal: a retry cannot help.  Abort the chain now.
             self._fail(diagnosis)
             return
 
@@ -322,10 +305,11 @@ class PrefStore(object):
         """One enumeration sweep, filling in whatever is still missing.
 
         Returns (missingShortNames, diagnosis).  `diagnosis` is None for a
-        normal (possibly incomplete) pass, or a string describing a TERMINAL
-        problem that no amount of retrying will fix.
+        normal pass, which can still be incomplete.  Otherwise it is a string
+        describing a TERMINAL problem that no retry will fix.
 
-        Partial progress is kept: a later sweep only looks for what is left.
+        The sweep keeps partial progress.  A later sweep looks only for what is
+        left.
         """
         missing = [s for s in self._keys if s not in self._components]
         if not missing:
@@ -341,7 +325,7 @@ class PrefStore(object):
                              % (COLLECTION_NAME, e))
 
         if collection is None:
-            # Distinct from "empty": a None return means the collection name
+            # Distinct from "empty".  A None return means the collection name
             # did not resolve at all, which is our bug, not the user's.
             return missing, ("dataHub.getEntityCollections(%r) returned None -- "
                              "the collection name is wrong for this build"
@@ -369,12 +353,10 @@ class PrefStore(object):
             return missing, ('failed to enumerate the %s collection: %s'
                              % (COLLECTION_NAME, e))
 
-        # Defensive: entities exist but none yields a readable component.  The
-        # v1 entity wrapper hides non-sync'd components, so this would mean
-        # Mods_DataComponent stopped being sync'd -- architectural, not a
-        # timing problem, and not something the user can fix by reinstalling.
-        # (Mods_DataComponent carries no sync="false" today, so this should
-        # never fire; `sync` is opt-out in Components.xml.)
+        # Defensive: entities exist, but none yields a readable component.  The
+        # v1 entity wrapper hides non-sync'd components, so this means
+        # Mods_DataComponent is not sync'd.  That is architectural, not a
+        # timing problem, and a reinstall cannot fix it.
         if seen and not readable:
             return missing, ('%d entities in the %s collection but none exposes '
                              'the component to v1 -- sync gate?'
@@ -393,8 +375,7 @@ class PrefStore(object):
         self._state = 'failed'
         self._components = {}
         self.stop()
-        # ONE error line, naming the specific keys -- the difference between
-        # diagnosing this in ten seconds and bisecting a key list.
+        # ONE error line, naming the specific keys.
         self._logError(
             'DISABLED -- pref store unavailable. TTaroModConfig is a required '
             'dependency of this mod. %s' % reason)
