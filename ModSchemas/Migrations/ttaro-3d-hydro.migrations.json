@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 4,
+  "opVocabularyVersion": 1,
+  "slug": "3d-hydro",
+  "migrations": [
+    {
+      "version": 1,
+      "description": "flat keys → dotted ancestry keys; slider step index → value; per-channel sliders → packed ARGB",
+      "ops": [
+        {
+          "op": "rename",
+          "from": "3dHydroCircleRangeOffset",
+          "to": "3dHydro.distanceOffset"
+        },
+        {
+          "op": "transform",
+          "from": "3dHydro.distanceOffset",
+          "to": "3dHydro.distanceOffset",
+          "transform": "stepIndex",
+          "args": {
+            "min": 0,
+            "step": 0.5
+          }
+        },
+        {
+          "op": "transform",
+          "from": "3dHydro.otherTeam.active.color",
+          "to": "3dHydro.otherTeam.active.color",
+          "transform": "packChannels",
+          "args": {
+            "default": 872362752,
+            "alphaFrom": "3dHydroCircleOpacityActive",
+            "alphaMin": 0,
+            "alphaStep": 0.1
+          }
+        },
+        {
+          "op": "transform",
+          "from": "3dHydro.otherTeam.active.colorEnemyInRange",
+          "to": "3dHydro.otherTeam.active.colorEnemyInRange",
+          "transform": "packChannels",
+          "args": {
+            "default": 2164208384,
+            "alphaFrom": "3dHydroCircleOpacityActiveWithEnemy",
+            "alphaMin": 0,
+            "alphaStep": 0.1
+          }
+        },
+        {
+          "op": "transform",
+          "from": "3dHydro.otherTeam.ready.color",
+          "to": "3dHydro.otherTeam.ready.color",
+          "transform": "packChannels",
+          "args": {
+            "default": 872415231,
+            "alphaFrom": "3dHydroCircleOpacityReady",
+            "alphaMin": 0,
+            "alphaStep": 0.1
+          }
+        },
+        {
+          "op": "transform",
+          "from": "3dHydro.otherTeam.ready.colorEnemyInRange",
+          "to": "3dHydro.otherTeam.ready.colorEnemyInRange",
+          "transform": "packChannels",
+          "args": {
+            "default": 872415231,
+            "alphaFrom": "3dHydroCircleOpacityReadyWithEnemy",
+            "alphaMin": 0,
+            "alphaStep": 0.1
+          }
+        },
+        {
+          "op": "transform",
+          "from": "3dHydro.otherTeam.reload.color",
+          "to": "3dHydro.otherTeam.reload.color",
+          "transform": "packChannels",
+          "args": {
+            "default": 872388915,
+            "alphaFrom": "3dHydroCircleOpacityReload",
+            "alphaMin": 0,
+            "alphaStep": 0.1
+          }
+        },
+        {
+          "op": "transform",
+          "from": "3dHydro.otherTeam.reload.colorEnemyInRange",
+          "to": "3dHydro.otherTeam.reload.colorEnemyInRange",
+          "transform": "packChannels",
+          "args": {
+            "default": 872388915,
+            "alphaFrom": "3dHydroCircleOpacityReloadWithEnemy",
+            "alphaMin": 0,
+            "alphaStep": 0.1
+          }
+        },
+        {
+          "op": "transform",
+          "from": "3dHydro.ownTeam.active.color",
+          "to": "3dHydro.ownTeam.active.color",
+          "transform": "packChannels",
+          "args": {
+            "default": 860678314,
+            "alphaFrom": "3dHydroCircleOpacityActive",
+            "alphaMin": 0,
+            "alphaStep": 0.1
+          }
+        },
+        {
+          "op": "transform",
+          "from": "3dHydro.ownTeam.active.colorEnemyInRange",
+          "to": "3dHydro.ownTeam.active.colorEnemyInRange",
+          "transform": "packChannels",
+          "args": {
+            "default": 2152523946,
+            "alphaFrom": "3dHydroCircleOpacityActiveWithEnemy",
+            "alphaMin": 0,
+            "alphaStep": 0.1
+          }
+        },
+        {
+          "op": "transform",
+          "from": "3dHydro.ownTeam.ready.color",
+          "to": "3dHydro.ownTeam.ready.color",
+          "transform": "packChannels",
+          "args": {
+            "default": 872415231,
+            "alphaFrom": "3dHydroCircleOpacityReady",
+            "alphaMin": 0,
+            "alphaStep": 0.1
+          }
+        },
+        {
+          "op": "transform",
+          "from": "3dHydro.ownTeam.ready.colorEnemyInRange",
+          "to": "3dHydro.ownTeam.ready.colorEnemyInRange",
+          "transform": "packChannels",
+          "args": {
+            "default": 872415231,
+            "alphaFrom": "3dHydroCircleOpacityReadyWithEnemy",
+            "alphaMin": 0,
+            "alphaStep": 0.1
+          }
+        },
+        {
+          "op": "transform",
+          "from": "3dHydro.ownTeam.reload.color",
+          "to": "3dHydro.ownTeam.reload.color",
+          "transform": "packChannels",
+          "args": {
+            "default": 872388915,
+            "alphaFrom": "3dHydroCircleOpacityReload",
+            "alphaMin": 0,
+            "alphaStep": 0.1
+          }
+        },
+        {
+          "op": "transform",
+          "from": "3dHydro.ownTeam.reload.colorEnemyInRange",
+          "to": "3dHydro.ownTeam.reload.colorEnemyInRange",
+          "transform": "packChannels",
+          "args": {
+            "default": 872388915,
+            "alphaFrom": "3dHydroCircleOpacityReloadWithEnemy",
+            "alphaMin": 0,
+            "alphaStep": 0.1
+          }
+        }
+      ]
+    }
+  ]
+}
