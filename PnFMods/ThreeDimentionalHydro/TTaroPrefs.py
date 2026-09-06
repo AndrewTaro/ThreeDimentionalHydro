@@ -4,13 +4,13 @@
 # PnFMods/<ModName>/ directory, next to its Main.py.
 #
 # TEMPLATE VERSION: 4
-# Canonical source: TTaroModConfig/PnFMods/TTaroModConfig/templates/TTaroPrefs.py
-# Do not edit the copy.  Fix the source, then re-copy into every consumer.
+# The canonical source (TTaroModUtils's templates/) was retired 2026-09-06.
+# The consumer copies are the source now -- keep every copy byte-identical.
 #
 # ---------------------------------------------------------------------------
 # WHAT THIS IS
 #
-# Reads the TTaroModConfig (TTaroModUtils) per-setting pref store from Python.
+# Reads the TTaroModUtils per-setting pref store from Python.
 # The framework publishes one `Mods_DataComponent` per storable setting, keyed
 # `modPrefs.<fullDottedKey>`, carrying {value, visible}.  The view reads those
 # with $datahub.getPrimWatcher.  This module is the Python-side equivalent.
@@ -32,7 +32,7 @@
 #    re-reads comp.data on every call.  Never cache what get() returns.
 #
 # 2. NO DEFAULTS LIVE HERE.
-#    TTaroModConfig is a hard dependency.  Every key must resolve or the mod
+#    TTaroModUtils is a hard dependency.  Every key must resolve or the mod
 #    refuses to run, so a read always has a live component behind it.  The
 #    framework publishes the EFFECTIVE value: the stored value, or the schema
 #    default when unset.  Mod-side defaults are a second source of truth that
@@ -285,7 +285,7 @@ class PrefStore(object):
 
         if self._attempt >= len(RETRY_DELAYS):
             self._fail(
-                'TTaroModConfig did not publish %d of %d pref component(s) '
+                'TTaroModUtils did not publish %d of %d pref component(s) '
                 'after %d attempts. Missing: %s'
                 % (len(missing), len(self._keys), self._attempt,
                    ', '.join(sorted(missing))))
@@ -377,7 +377,7 @@ class PrefStore(object):
         self.stop()
         # ONE error line, naming the specific keys.
         self._logError(
-            'DISABLED -- pref store unavailable. TTaroModConfig is a required '
+            'DISABLED -- pref store unavailable. TTaroModUtils is a required '
             'dependency of this mod. %s' % reason)
         if self._onFailed is not None:
             cb, self._onFailed = self._onFailed, None

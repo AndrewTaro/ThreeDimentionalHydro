@@ -15,7 +15,7 @@ The mod is officially checked and approved by WG, thus, it is safe to use.
 ![image](https://github.com/AndrewTaro/ThreeDimentionalRadarPublic/assets/36262823/90fefaee-386e-489d-bc93-7dab1303615f)
 
 # Requirement
-[TTaro Mod Config](../../../TTaroModConfig) is **required**. This mod reads every one of its
+[TTaro Mod Config](../../../TTaroModUtils) is **required**. This mod reads every one of its
 settings from it, and refuses to run without it rather than falling back to built-in values.
 
 # Install
@@ -25,7 +25,7 @@ settings from it, and refuses to run without it rather than falling back to buil
 4. Done!
 
 # Config
-Configure the mod in [TTaro Mod Config](../../../TTaroModConfig).
+Configure the mod in [TTaro Mod Config](../../../TTaroModUtils).
 
 ![image](https://github.com/AndrewTaro/ThreeDimentionalRadioPublic/assets/36262823/96d41ff9-027a-4665-8051-5e4bf00657a5)
 

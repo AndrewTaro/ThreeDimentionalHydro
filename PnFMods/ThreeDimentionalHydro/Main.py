@@ -309,7 +309,7 @@ _gHydroDrawersManager = None
 
 
 def onPrefsReady():
-    # Nothing may be created before the prefs resolve: TTaroModConfig is a hard
+    # Nothing may be created before the prefs resolve: TTaroModUtils is a hard
     # dependency, and a half-live mod drawing against absent settings is the
     # state the fail-fast exists to prevent.
     global _gHydroDrawersManager
