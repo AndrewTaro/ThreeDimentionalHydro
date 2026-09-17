@@ -4,7 +4,7 @@
 # PnFMods/<ModName>/ directory, next to its Main.py.
 #
 # TEMPLATE VERSION: 4
-# The canonical source (TTaroModUtils's templates/) was retired 2026-09-06.
+# The canonical source (TTaroModUtils's templates/) is retired.
 # The consumer copies are the source now -- keep every copy byte-identical.
 #
 # ---------------------------------------------------------------------------

@@ -57,12 +57,9 @@ PREF_KEYS = {
 # transparent black.  An unlisted state also reads None and is not drawn, rather
 # than raising once per tick as the old colour table did.
 #
-# Keyed by NAME, never by number.  The mod-side enum on 12830008 is 8 states
-# (READY 0, SELECTED 1, WORK_PREPARATION 2, AT_WORK 3, RELOAD 4, NO_AMMO 5,
-# PREPARATION 6, REGENERATION 7) and does not match the 7-state view-side
-# numbering some references quote -- AT_WORK is 3 here, not 2.  WORK_PREPARATION
-# and REGENERATION join the reload bucket on the client's own groupings:
-# WITH_TIME_STATES holds [2,3,4,6,7] and RELOAD_LIKE holds [4,7].
+# Keyed by NAME, never by number: the numbering is build-specific.
+# WORK_PREPARATION and REGENERATION join the reload bucket, following the
+# client's own state groupings.
 STATE_BUCKETS = {
     constants.ConsumableStates.READY:            'ready',
     constants.ConsumableStates.SELECTED:         'ready',
