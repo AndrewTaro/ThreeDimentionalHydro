@@ -11,7 +11,7 @@ import SpatialUI
 from Math import Matrix
 from math import pi
 
-import TTaroPrefs
+import Hub
 
 
 def logInfo(message):
@@ -33,23 +33,25 @@ METER_TO_BW = 1.0 / 30.0
 KM_TO_BW = 1000.0 * METER_TO_BW
 
 
-# shortName -> full dotted key, from 3d-hydro.schema.json.  Colour and alpha
-# both ride in one packed 0xAARRGGBB value per (team, state, enemy-in-range).
-PREF_KEYS = {
-    'ownTeam.ready.color':                 'ttaro.3dHydro.ownTeam.ready.color',
-    'ownTeam.ready.colorEnemyInRange':     'ttaro.3dHydro.ownTeam.ready.colorEnemyInRange',
-    'ownTeam.reload.color':                'ttaro.3dHydro.ownTeam.reload.color',
-    'ownTeam.reload.colorEnemyInRange':    'ttaro.3dHydro.ownTeam.reload.colorEnemyInRange',
-    'ownTeam.active.color':                'ttaro.3dHydro.ownTeam.active.color',
-    'ownTeam.active.colorEnemyInRange':    'ttaro.3dHydro.ownTeam.active.colorEnemyInRange',
-    'otherTeam.ready.color':               'ttaro.3dHydro.otherTeam.ready.color',
-    'otherTeam.ready.colorEnemyInRange':   'ttaro.3dHydro.otherTeam.ready.colorEnemyInRange',
-    'otherTeam.reload.color':              'ttaro.3dHydro.otherTeam.reload.color',
-    'otherTeam.reload.colorEnemyInRange':  'ttaro.3dHydro.otherTeam.reload.colorEnemyInRange',
-    'otherTeam.active.color':              'ttaro.3dHydro.otherTeam.active.color',
-    'otherTeam.active.colorEnemyInRange':  'ttaro.3dHydro.otherTeam.active.colorEnemyInRange',
-    'distanceOffset':                      'ttaro.3dHydro.distanceOffset',
-}
+# Key tails from ttaro-3d-hydro.schema.json.  Literals, not a loop: a computed table is
+# invisible to lint_pref_keys.py.  Colour and alpha both ride in one packed
+# 0xAARRGGBB value per (team, state, enemy-in-range).
+PREF_PREFIX = 'ttaro.3dHydro.'
+PREF_KEYS = (
+    'ownTeam.ready.color',
+    'ownTeam.ready.colorEnemyInRange',
+    'ownTeam.reload.color',
+    'ownTeam.reload.colorEnemyInRange',
+    'ownTeam.active.color',
+    'ownTeam.active.colorEnemyInRange',
+    'otherTeam.ready.color',
+    'otherTeam.ready.colorEnemyInRange',
+    'otherTeam.reload.color',
+    'otherTeam.reload.colorEnemyInRange',
+    'otherTeam.active.color',
+    'otherTeam.active.colorEnemyInRange',
+    'distanceOffset',
+)
 
 # Consumable state -> the schema's three colour buckets.  SELECTED shares READY
 # and PREPARATION shares RELOAD, exactly as they shared an opacity pref before.
@@ -72,8 +74,6 @@ STATE_BUCKETS = {
 }
 
 OPAQUE = 0xFF000000
-
-gPrefs = TTaroPrefs.PrefStore(MOD_NAME, PREF_KEYS)
 
 
 def packedColor(packed):
@@ -316,4 +316,4 @@ def onPrefsReady():
     logInfo('Init.')
 
 
-gPrefs.start(onReady=onPrefsReady)
+gPrefs = Hub.Prefs(MOD_NAME, PREF_KEYS, PREF_PREFIX, onReady=onPrefsReady)
