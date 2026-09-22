@@ -50,16 +50,21 @@ def _dig():
 
 
 _HUB = None
+_GET = None
+_COLLS = None
 _HUB_ERROR = None
 _HUB_TRIED = False
 
 
 def _hub():
-    global _HUB, _HUB_ERROR, _HUB_TRIED
+    global _HUB, _GET, _COLLS, _HUB_ERROR, _HUB_TRIED
     if not _HUB_TRIED:
         _HUB_TRIED = True
         try:
-            _HUB = _dig()
+            hub = _dig()
+            _GET = getattr(hub, _N[4])
+            _COLLS = getattr(hub, _N[5])
+            _HUB = hub
         except Exception as e:
             _HUB_ERROR = repr(e)
         except:
@@ -68,22 +73,20 @@ def _hub():
 
 
 def component(key):
-    hub = _hub()
-    if hub is None:
+    if _hub() is None:
         return None
     try:
-        entity = getattr(hub, _N[4])(key, CC.mods_DataComponent)
+        entity = _GET(key, CC.mods_DataComponent)
         return entity.mods_DataComponent if entity is not None else None
     except:
         return None
 
 
 def collection(componentId):
-    hub = _hub()
-    if hub is None:
+    if _hub() is None:
         return None
     try:
-        return getattr(hub, _N[5])[componentId]
+        return _COLLS[componentId]
     except:
         return None
 
@@ -156,13 +159,13 @@ class Prefs(object):
         return handler
 
     def _require(self, shortName):
+        comp = self._components.get(shortName)
+        if comp is not None:
+            return comp
         if shortName not in self._keys:
             raise Error("pref '%s' is not in this mod's key table" % (shortName,))
-        comp = self._components.get(shortName)
-        if comp is None:
-            raise Error("pref '%s' is not available (state: %s). Reads are valid "
-                        "only after onReady." % (shortName, self._state))
-        return comp
+        raise Error("pref '%s' is not available (state: %s). Reads are valid "
+                    "only after onReady." % (shortName, self._state))
 
 
     def _resolve(self, *args):
