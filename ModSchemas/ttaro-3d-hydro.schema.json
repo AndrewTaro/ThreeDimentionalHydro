@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "id": "cmtkswuwg0001v0141l4cai5w",
   "author": "ttaro",
   "modName": "3D Hydro",
@@ -9,11 +9,12 @@
     {
       "kind": "group",
       "key": "cmslc0n550013v08c3v9ugjsz",
-      "aggregate": "inline",
+      "display": "transparent",
       "children": [
         {
           "kind": "group",
           "key": "cmslc0n570017v08c4n3jyuxk",
+          "display": "section",
           "label": "IDS_TT_CONSUMABLE_READY",
           "collapse": "expanded",
           "children": [
@@ -40,6 +41,7 @@
         {
           "kind": "group",
           "key": "cmslc0n5c001fv08c5h2eggju",
+          "display": "section",
           "label": "IDS_TT_CONSUMABLE_RELOAD",
           "collapse": "expanded",
           "children": [
@@ -66,6 +68,7 @@
         {
           "kind": "group",
           "key": "cmslc0n5i001nv08cs38cms5s",
+          "display": "section",
           "label": "IDS_TT_CONSUMABLE_ACTIVE",
           "collapse": "expanded",
           "children": [
@@ -94,6 +97,7 @@
     {
       "kind": "group",
       "key": "cmtktam0j002tv0d4yxeq67ok",
+      "display": "section",
       "label": "IDS_TT_TITLE_WITH_ENEMY_DISTANCE_OFFSET",
       "collapse": "expanded",
       "children": [
@@ -112,6 +116,7 @@
     {
       "kind": "group",
       "key": "cmslc0n560015v08cra9s0ehc",
+      "display": "section",
       "label": "IDS_TT_TITLE_OTHER_TEAM",
       "hint": {
         "text": "IDS_TT_HINT_OTHER_TEAM_SPECTATOR"
@@ -121,6 +126,7 @@
         {
           "kind": "group",
           "key": "cmslc0n570019v08cyodp06fh",
+          "display": "section",
           "label": "IDS_TT_CONSUMABLE_READY",
           "collapse": "expanded",
           "children": [
@@ -147,6 +153,7 @@
         {
           "kind": "group",
           "key": "cmslc0n5d001hv08cppbf226b",
+          "display": "section",
           "label": "IDS_TT_CONSUMABLE_RELOAD",
           "collapse": "expanded",
           "children": [
@@ -173,6 +180,7 @@
         {
           "kind": "group",
           "key": "cmslc0n5j001pv08ce4fz4d7u",
+          "display": "section",
           "label": "IDS_TT_CONSUMABLE_ACTIVE",
           "collapse": "expanded",
           "children": [
